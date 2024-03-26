@@ -45,54 +45,64 @@ function daysIn(year) {
 
 }
 
-
 /**
- * @param {String} text - any text
- * @param {Range} range - a range to search
- * @return {Range} Range of the cell
- * @customfunction
+ * @function randomNumber
+ * @param {Number} a number in range (0,number)
+ * @return {Number} a random day in the range (0,number)
  */
 
-function finder(text, range){
+function randomNumber(number) {
 
-  if (typeof text !== 'string') {
-      throw new Error('Invalid input: text must be a string');
-    }
+  // Math.random() * (max - min)
+  return Math.floor(Math.random() * (number - 0))
+}
 
-  try {
-    return range.createTextFinder().TextFinder(text).matchCase(true).
-    matchEntireCell(true).findNext();
-  }
-  catch (err) {
+
+/**
+ * @function handleError
+ * @param {Error}
+ */
+function handleError(err) {
     Logger.log(`Failed with error ${err.message}`);
-  }
-}
+    throw err;
+ }
 
 /**
- * @param {Number} difference 
- * @param {Date} a date, default argument is today
- * @return {Date} a date
+ * @function expectToExist(
+ * A simple exists assertion check. Expects a value to exist. Errors if DNE.
+ * @param {Any} value A value that is expected to exist.
  */
-function dateDifferenceCalculator(difference, date = new Date()){
 
-  if (typeof difference !== 'number') {
-      throw new Error('Invalid input: difference must be a number');
-    }
-  
-  if (typeof date !== 'date') {
-    throw new Error('Invalid input: date must be a date');
+function expectToExist(value){
+  if (value >= 0){
+    Logger.log(`TEST: Exists - ${value}`);
   }
-  
-  // dd/mm/yyyy
-  const millisPerDay = 1000 * 60 * 60 * 24;
-  const totalDifference = difference * millisPerDay;
-  const newDate = new Date(date.getTime() - 7 * millisPerDay);
-  const timeZone = Session.getScriptTimeZone();
-  const format = "dd/mm/yyyy";
-  return Utilities.formatDate(newDate, timeZone,format);
-
-
+  else {
+    throw new Error('TEST: Does not exist')
+  }
 }
+
+
+/**
+ * @function expectToEqual
+ * A simple exists assertion check for primatives (no nested objects).
+ * Expects actual to equal expected. Logs the output.
+ * @param {Any} actual The actual value.
+ * @param {Any} expected The expected value.
+ */
+
+function expectToEqual(actual, expected) {
+  Logger.log(`TEST: actual: ${actual} = expected: ${expected}`);
+  if (actual !== expected) {
+    Logger.log(`TEST: ${expected} not equal to ${actual}`)
+  }
+}
+
+
+
+
+
+
 
 
 

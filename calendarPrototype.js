@@ -1,42 +1,45 @@
 /**
- * // convert columns to an object where column numbers are keys and times are values
- * // this way when we get the last index of sleep we can turn it into a time
- * Base calendar function
- * @constructor
- * @params {Number} cellsPerHour - cells per hour
- */
-
-function Calendar(cellsPerHour){
+* Base calendar function
+* @constructor
+* @params {Number} cellsPerHour - cells per hour
+* @params {String} categoriesColumnHeader - Header for column with list of categories
+*/
+function Calendar(cellsPerHour,categoriesColumnHeader){
 
   if (typeof cellsPerHour !== 'number') {
       throw new Error('Invalid input: cellsPerHour must be a number');
     }
+  
+  if (typeof categoriesColumnHeader !== 'string') {
+      throw new Error('Invalid input: categoriesColumnHeader must be a string');
+    }
 
   try {
 
-    this.sheet = SpreadsheetApp.getActiveSheet();
-    this.year = this.sheet.getSheetName();
-    this.cellsPerHour = cellsPerHour;
-    
-    // calendars always start at B2
-    this.row1 = 2;
-    this.column1 = 2;
+      this.sheet = SpreadsheetApp.getActiveSheet();
+      this.year = this.sheet.getSheetName();
+      this.cellsPerHour = cellsPerHour;
+      this.categoriesColumnHeader = categoriesColumnHeader;
+      
+      // calendars always start at B2
+      this.row1 = 2;
+      this.column1 = 2;
 
-    // use cellsPerHour to calculate how many cells are in the full calendar range
-    this.hours = 24;
-    this.columns = (this.hours * this.cellsPerHour); 
+      // use cellsPerHour to calculate how many cells are in the full calendar range
+      this.hours = 24;
+      this.columns = (this.hours * this.cellsPerHour); 
     
-    // use sheetname to get days in the year. 
-    // last row is days
-    this.days = daysIn(this.year); 
-    this.rows = this.days;
+      // use sheetname to get days in the year. 
+      // last row is days
+      this.days = daysIn(this.year); 
+      this.rows = this.days;
 
-    this.categories = ["Le sommeil", "Les jeux vidéos", "Le temps d'arrêt", "Le temps en famille", "La socialisation", "La musculation", "Le travail", "La productivité", "Le dating", "Les rendez-vous", "Les tâches", "Le temps perdu",
-      "Les voyages", "Le skating"];
-    
-    // get calendar range
-    // getRange(row, column, numRows, numColumns)
-    this.Calendar = this.sheet.getRange(this.row1,this.column1, this.rows, this.columns);
+      // for running calculations
+      this.weeklength = 7;
+      this.monthLength = 30;
+      
+      // getRange(row, column, numRows, numColumns)
+      this.Calendar = this.sheet.getRange(this.row1,this.column1, this.rows, this.columns);
 
   }
 
@@ -46,10 +49,10 @@ function Calendar(cellsPerHour){
 
 }
 
-  /**
-   * @function getCalendar
-   * @return {Range} the full calendar
-   * */
+/**
+* @function getCalendar
+* @return {Range} the full calendar
+* */
 Calendar.prototype.getCalendar = function() {
     
     try {
@@ -62,10 +65,10 @@ Calendar.prototype.getCalendar = function() {
 
   }
 
-  /**
-   * @function getCalendarArray
-   * @return {Array<Array<String>>} the full calendar as a 2d array
-   * */
+/**
+* @function getCalendarArray
+* @return {Array<Array<String>>} the full calendar as a 2d array
+* */
 Calendar.prototype.getCalendarArray = function() {
     
     try {
@@ -77,14 +80,45 @@ Calendar.prototype.getCalendarArray = function() {
     }
 
   }
+  
+/**
+* @function getSheetCategories
+* @return {Array<String>} the list of categories in a sheet
+* */
+Calendar.prototype.getSheetCategories = function() {
 
-  /**
-   * @function notesOfAYeear
-   * @return {Array<String>} all notes in a 1D array
-   */
+  try {
+      // Finds Les Catégories 
+      // use finder
+      const categories = this.sheet.createTextFinder(this.categoriesColumnHeader).matchCase(true).matchEntireCell(true).findNext();
+      
+      //Begining row and column address
+      const categoriesCol = categories.getColumn();
+      // Add one because we don't need col
+      const categoriesRow = categories.getRow() + 1;
+
+      //Move down to last row in range of categories - 2(-1 since we added one to the first row + 
+      // -1 since last we are passing the row difference)
+      const rangeLength = categories.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - 2;
+
+      //return getSheetValues(startRow, startColumn, numRows, numColumns)
+      // flat can be used to flatten 2d array into one array even though it's not recognized;
+      return this.sheet.getRange(categoriesRow, categoriesCol, rangeLength, 1).getValues().flat();
+
+  }
+  catch (err) {
+    handleError(err)
+  }
+
+
+}
+
+/**
+* @function notesOfAYeear
+* @return {Array<String>} all notes in a 1D array
+*/
 Calendar.prototype.notesOfAYear = function() {
 
-    // flat can be used to flatten 2d array into one array even though it's not recognized;
     try {
       return this.getCalendarArray().flat();
     }
@@ -93,12 +127,31 @@ Calendar.prototype.notesOfAYear = function() {
     }
 
   }
-  
+
+
   /**
-   * @function categoryNotes
-   * @params {String} category - a category
-   * return {Number} sum of all the notes from a single category for a year
-   * */
+   * @function filledNotes
+   * @return {Array<string>} all filled in notes in a 1D array
+   */
+Calendar.prototype.filledNotes = function() {
+    
+    try {
+
+      const sheetCategoriesSet = new Set(this.getSheetCategories());
+      return this.notesOfAYear().filter((x) => sheetCategoriesSet.has(x));
+    }
+    catch (err) {
+      handleError(err)
+    }
+
+  }
+  
+
+/**
+* @function categoryNotes
+* @params {String} category - a category
+* return {Number} sum of all the notes from a single category for a year
+ * */
 Calendar.prototype.categoryNotes = function (category){
 
     if (typeof category !== 'string') {
@@ -106,7 +159,7 @@ Calendar.prototype.categoryNotes = function (category){
     }
 
     try {
-      return categorySum(this.notesOfAYear(),category);
+      return categorySum(this.filledNotes(),category);
     }
     catch (err) {
       handleError(err);
@@ -114,12 +167,11 @@ Calendar.prototype.categoryNotes = function (category){
     
 }
 
-  
-  /** 
-   * @function hoursPerCategory
-   * @params {String} category - a category
-   * return {Number} sum of all the notes from a single category / cellsPerHour
-   */
+/** 
+* @function hoursPerCategory
+* @params {String} category - a category
+* return {Number} sum of all the notes from a single category / cellsPerHour
+*/
 Calendar.prototype.hoursPerCategory = function(category){
 
     if (typeof category !== 'string') {
@@ -141,22 +193,15 @@ Calendar.prototype.hoursPerCategory = function(category){
    * @params {String} a category
    * return {Number} percentage of the year by category
    * */
-Calendar.prototype.categoryPercentage = function(category) {
+Calendar.prototype.percentagePerCategory = function(category) {
     
     if (typeof category !== 'string') {
       throw new Error('Invalid input: category must be a string');
     }
 
     try {
-      // filled notes only
-      this.filled = this.categoryNotes(category);
 
-      // the full calendar
-      this.fullyear = this.filledNotes();
-      
-      // divide the amount of notes so far by
-      // the size of the full calendar
-      return filled/fullyear;
+      return this.categoryNotes(category)/this.filledNotes().length;      
 
     }
 
@@ -165,23 +210,7 @@ Calendar.prototype.categoryPercentage = function(category) {
     }
     
     }
-  
-  /**
-   * @function filledNotes
-   * @return {Number} sum of all filled in notes in a 1D array
-   */
-Calendar.prototype.filledNotes = function() {
-    
-    this.categoriesSet = new Set(this.categories);
 
-    try {
-      return this.notesOfAYear().filter((x) => categories.has(x)).length;
-    }
-    catch (err) {
-      handleError(err)
-    }
-
-  }
 
   /**
    * @function percentageOfTheYear
@@ -190,14 +219,9 @@ Calendar.prototype.filledNotes = function() {
 Calendar.prototype.percentageOfTheYear = function() {
     try {
       
-      // filled notes only
-      this.fillednotes = this.filledNotes();
-      
-      // the full calendar
-      this.allnotes = this.notesOfAYear().length;
       // divide the amount of notes so far by
       // the size of the full calendar
-      return fillednotes/allnotes;
+      return this.filledNotes().length/this.notesOfAYear().length;
 
     }
     catch (err) {
@@ -213,12 +237,9 @@ Calendar.prototype.percentageOfTheYear = function() {
 Calendar.prototype.hoursRegistered = function(){
 
     try {
-
-      // filled notes only
-      this.filled = this.filledNotes();
-
+	
       // Divide the amount of notes so far by cells per hour
-      return Math.floor(filled/this.cellsPerHour);
+      return this.filledNotes().length/this.cellsPerHour;
 
     }
 
@@ -236,16 +257,31 @@ Calendar.prototype.daysPassed = function(){
 
     try {
       
-      // use floor to round down calculation
-      this.hours = 24;
-
       // Divide the total amount hours counted so far by year hour
-      return Math.floor(this.hoursRegistered()/hours);
+      return Math.floor(this.hoursRegistered()/this.hours);
 
     }
     catch (err) {
       handleError(err)
     }
+}
+
+/**
+ *@function getDayNumber
+ *@params {Number} get the number of a specific day in the range from (0,today)
+ *@return {Number} day of the year (0,365)
+ **/
+
+Calendar.prototype.getDayNumber = function (difference) {
+  
+    try {
+      return this.daysPassed() - difference;
+    }
+
+    catch (err) {
+      handleError(err)
+    }
+
 }
 
   /**
@@ -255,10 +291,7 @@ Calendar.prototype.daysPassed = function(){
 Calendar.prototype.weeksPassed = function() {
     try {
 
-      // use floor to round down calculation
-      this.weeklength = 7;
-      // Divide the total amount so far by the amount of weeks in a year
-      return Math.floor(this.daysPassed()/weeklength);
+      return Math.floor(this.daysPassed()/this.weeklength);
 
     }
     catch (err) {
@@ -324,6 +357,7 @@ Calendar.prototype.dayOfACategorylastindex = function(dayNumber, category) {
     }
 }
   /**
+   * @function todayOfACategory
   * @params {String} category - a category
    * return {Number} total notes for a category for today
   */
@@ -336,8 +370,7 @@ Calendar.prototype.todayOfACategory = function(category) {
     try {
 
       // Today is the last filled row in the 2d array of getvalues
-      this.todayNumber = this.getCalendarArray().length-1;
-      return this.dayOfACategory(todayNumber,category);
+      return this.dayOfACategory(this.getDayNumber(0),category);
     }
 
     catch (err) {
@@ -358,8 +391,8 @@ Calendar.prototype.yesterdayOfACategory = function(category) {
     try {
 
       // Today is the last filled row in the 2d array of getvalues
-      this.yesterdayNumber = this.getCalendarArray().length-2;
-      return this.dayOfACategory(yesterdayNumber,category);
+      
+	    return this.dayOfACategory(this.getDayNumber(1),category);
     }
 
     catch (err) {
@@ -439,9 +472,7 @@ Calendar.prototype.currentRunningWeekSliceOfACategory = function(category) {
     }
 
     try {
-  
-      this.weekAgoNumber = this.getCalendarArray().length-8;
-      return this.weekSliceOfACategory(weekAgoNumber,category);
+      return this.weekSliceOfACategory(this.getDayNumber(8),category);
     }
 
     catch (err) {
@@ -460,9 +491,7 @@ Calendar.prototype.previousRunningWeekSliceOfACategory = function(category) {
     }
 
     try {
-
-      this.twoweeksAgoNumber = this.getCalendarArray().length-16;
-      return this.weekSliceOfACategory(twoweeksAgoNumber,category);
+      return this.weekSliceOfACategory(this.getDayNumber(15),category);
     }
 
     catch (err) {
@@ -526,8 +555,7 @@ Calendar.prototype.currentRunningMonthSliceOfACategory = function(category) {
 
     try {
       // Today is the last filled row in the 2d array of getvalues
-      this.onemonthAgoNumber = this.getCalendarArray().length-30;
-      return this.monthSliceOfACategory(onemonthAgoNumber,category);
+      return this.monthSliceOfACategory(this.getDayNumber(31),category);
     }
 
     catch (err) {
@@ -547,8 +575,7 @@ Calendar.prototype.previousRunningMonthSliceOfACategory = function(category) {
     }
     try {
       // Today is the last filled row in the 2d array of getvalues
-      this.twoMonthsAgoNumber = this.getCalendarArray().length-60;
-      return this.monthSliceOfACategory(twoMonthsAgoNumber,category);
+      return this.monthSliceOfACategory(this.getDayNumber(62),category);
     }
 
     catch (err) {
