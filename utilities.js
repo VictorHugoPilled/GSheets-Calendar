@@ -170,8 +170,8 @@ function expectToEqual(actual, expected) {
 
 /**
  * @function
- * @ params {string} key - Anything
- * @ return {any} value or null
+ * @params {string} key - Anything
+ * @return {any} value or null
  */
 function getCache(key){
 
@@ -183,10 +183,10 @@ function getCache(key){
 
 
 /**
- * @function
- * @ params {string} key - a key name
- * @ params {any} value - a value 
- * @ params {number} expirationInSeconds - time that item will stay in cache
+ * @function putCache
+ * @params {string} key - a key name
+ * @params {any} value - a value 
+ * @params {number} expirationInSeconds - time that item will stay in cache
  */
 function putCache(key,value, expirationInSeconds){
 
@@ -198,6 +198,110 @@ function putCache(key,value, expirationInSeconds){
 }
 
 
+/**
+* @function finder
+* @params {Sheet} sheet - a sheet to search
+* @params {String} value - a string to find in the sheet
+* @return {Range}
+*/
+function finder(sheet, value) {
+  return sheet.createTextFinder(value).matchCase(true).matchEntireCell(true).findNext();
+} 
+
+
+/**
+* @function escape
+* @params {string} htmlStr - any string 
+* @returns {string} a string with special character escaped
+*/
+function escape(htmlStr) {
+
+   return htmlStr.replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#39;");        
+
+}
+/**
+ * 
+    < with &lt;
+    > with &gt;
+    " with &quot;
+    ' with &#39;
+    & with &amp;
+ */
+function testescape(htmlStr) {
+   return htmlStr.replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#39;");        
+
+}
+
+
+/**
+* @function rounder
+* @params {number} num - number to round
+* @params {number} decimals - decimals to round
+* @returns {number} 
+*/
+function rounder(x, digits=2) {
+  return Number.parseFloat(x).toFixed(digits);
+}
+
+
+/**
+ * @function createHtmlTable
+ * @params {Object} data - an object containing date that will be used to fill the table
+ * @params {String} header - a name for the sidebar 
+ * @return {HTML} can be directly used in showSidebar 
+ */
+function createHtmlTable(data, header = 'My Stats') {
+
+ // Create the table
+ var htmlOutput = HtmlService.createHtmlOutput().setTitle(header);
+
+ // Start building the table.
+ htmlOutput.append('<table border="1">');
+ htmlOutput.append(`<style>"
+             "table, th, td { border: 1px solid black; padding: 5px; }"
+             "</style>`);
+
+  // Iterate through the object
+ Object.entries(data).forEach(entry => {
+  var [key, value] = entry;
+
+  // escape any special characters
+  if (typeof key == 'string') {
+    key = escape(key);
+   }
+
+  if (typeof value == 'string') {
+    value = escape(value);
+   }
+  
+  // create a row
+  htmlOutput.append(`<tr>`);
+
+  // insert the key
+  htmlOutput.append(`<td> ${key} </td>`);
+
+  // input can be a list or single item
+  typeof value == "object" ? 
+  value.forEach((val) => {
+    htmlOutput.append(`<td> ${val} </td>`)}) : htmlOutput.append(`<td> ${value} </td>`);
+
+  
+  // end of the row
+  htmlOutput.append(`<tr>`);
+});
+
+ // Close the table.
+ htmlOutput.append('</table>');
+ return htmlOutput;
+}
 
 
 

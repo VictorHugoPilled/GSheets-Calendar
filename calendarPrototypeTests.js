@@ -1,9 +1,10 @@
 function testCalendar(){
 
-    const cellsPerHour = 6;
-    const testCalendar = new Calendar(cellsPerHour);
-    
+    // check without cache
+    const testCalendar = new Calendar();
+    expectToExist(testCalendar.cellsPerHour);
     expectToExist(testCalendar.notesOfAYear().length);
+
 
 }
 
@@ -14,84 +15,56 @@ function testgetSheetCategories(){
     const categories = ["Le sommeil", "Les jeux vidéos", "Le temps d'arrêt", "Le temps en famille", "La socialisation", "La musculation", "Le travail", "La productivité", "Le dating", "Les rendez-vous", "Les tâches", "Le temps perdu",
     "Les voyages", "Le skating"];
 
-    const cellsPerHour = 6;
-    const categoriesColumnHeader = "Les Catégories";
-
     // store the calendar
-    const calendar = new Calendar(cellsPerHour);
+    const calendar = new Calendar();
 
-    const sheetCategories = new Set(calendar.getSheetCategories(categoriesColumnHeader));
+    // check without cache
+    const sheetCategories = new Set(calendar.getSheetCategories("Categories"));
     expectToEqual(categories.filter((category) => sheetCategories.has(category)).length, categories.length);
+
+    // check with cache
+    const sheetCategories2 = new Set(calendar.getSheetCategories("Categories", true));
+    expectToEqual(categories.filter((category) => sheetCategories2.has(category)).length, categories.length);
+
     
 }
   
 
-function testpercentageOfTheYear() {
+function testcalendarCalculations() {
   
-  const cellsPerHour = 6;
 
   // store the calendar
-  const calendar = new Calendar(cellsPerHour);
+  const calendar = new Calendar();
 
-  expectToExist(calendar.calendarCalculations("Percentage of the year"));
+  // check without cache
+  Object.entries(calendar.calendarCalculations()).forEach((entry) => {
+    const [_, value] = entry;
+    expectToExist(value);
+  }
+  );
+
+  // check with cache
+  Object.entries(calendar.calendarCalculations(true)).forEach((entry) => {
+    const [_, value] = entry;
+    console.log(entry)
+  }
+  );
+
+
 
     
   }
 
 
-function testhoursPassed(){
-
-  const cellsPerHour = 6;
-
-  // store the calendar
-  const calendar = new Calendar(cellsPerHour);
-
-  expectToExist(calendar.calendarCalculations("Hours passed"));
-}
-
-function testdaysPassed(){
-
-  const cellsPerHour = 6;
-
-  // store the calendar
-  const calendar = new Calendar(cellsPerHour);
-
-  expectToExist(calendar.calendarCalculations("Days passed"));
-}
-
-
-function testweeksPassed(){
-
-  const cellsPerHour = 6;
-
-  // store the calendar
-  const calendar = new Calendar(cellsPerHour);
-
-  expectToExist(calendar.calendarCalculations("Weeks passed"));
-}
-
-function testmonthsPassed(){
-
-  const cellsPerHour = 6;
-
-  // store the calendar
-  const calendar = new Calendar(cellsPerHour);
-
-  expectToExist(calendar.calendarCalculations("Months passed"));
-}
-
-
-
 function testcalendarSlicer(){
 
-  const cellsPerHour = 6;
+  
   const hours = 24;
 
-  const expectedlengthpartial = cellsPerHour * hours;
+  // store the calendar
+  const calendar = new Calendar();
 
-    // store the calendar
-  const calendar = new Calendar(cellsPerHour);
-
+  const expectedlengthpartial = calendar.cellsPerHour * hours;
 
   // For a random day, can we get a correctly sized slice, testing slice sizes of 1 to 30
   Array.from(range(1,30)).forEach((num) => expectToEqual(calendar.calendarSlicer(num,num).length,expectedlengthpartial * num))
@@ -100,64 +73,50 @@ function testcalendarSlicer(){
 } 
 
 
-function testtotalNotesOfACategory() {
+function testcategoryCalculations() {
 
   
-  const cellsPerHour = 6;
-  const categoriesColumnHeader = "Les Catégories";
-
   // store the calendar
-  const calendar = new Calendar(cellsPerHour);
+  const calendar = new Calendar();
 
-  // for each category 
-  const categories = calendar.getSheetCategories(categoriesColumnHeader);
-  categories.forEach((category) => expectToExist(calendar.categoryRangeCalculations(category, "Today", "Total Notes")));
+  const categories = calendar.getSheetCategories();
 
-}
+  // check without cache
+  categories.forEach((category) => {
+    Object.entries(calendar.categoryCalculations(category)).forEach((entry) => {
+    const [_, value] = entry;
 
-function testpercentageOfACategory() {
-
+    Object.entries(value).forEach((nestedEntry) => {
+      const [_, nestedValue] = nestedEntry;
+      expectToExist(nestedValue);
+    })
   
-  const cellsPerHour = 6;
-  const categoriesColumnHeader = "Les Catégories";
+    }
+    )
 
-  // store the calendar
-  const calendar = new Calendar(cellsPerHour);
+  })
 
-  // for each category 
-  const categories = calendar.getSheetCategories(categoriesColumnHeader);
-  categories.forEach((category) => expectToExist(calendar.categoryRangeCalculations(category, "Current Week", "Percentage")));
+  // check with cache
+  categories.forEach((category) => {
+    Object.entries(calendar.categoryCalculations(category,true)).forEach((entry) => {
+    const [_, value] = entry;
 
-}
-
-
-function testaverageOfACategory() {
-
+    Object.entries(value).forEach((nestedEntry) => {
+      const [_, nestedValue] = nestedEntry;
+      expectToExist(nestedValue);
+    })
   
-  const cellsPerHour = 6;
-  const categoriesColumnHeader = "Les Catégories";
+    }
+    )
 
-  // store the calendar
-  const calendar = new Calendar(cellsPerHour);
-
-  // for each category 
-  const categories = calendar.getSheetCategories(categoriesColumnHeader);
-  categories.forEach((category) => expectToExist(calendar.categoryRangeCalculations(category, "Previous Week", "Average Time in Hours")));
-
-}
-
-function testtotalHoursOfACategory() {
-
+  })
   
-  const cellsPerHour = 6;
-  const categoriesColumnHeader = "Les Catégories";
+  
 
-  // store the calendar
-  const calendar = new Calendar(cellsPerHour);
+  }
 
-  // for each category 
-  const categories = calendar.getSheetCategories(categoriesColumnHeader);
-  categories.forEach((category) => expectToExist(calendar.categoryRangeCalculations(category, "Current Month", "Total Hours")));
 
-}
+
+
+
 

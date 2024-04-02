@@ -95,9 +95,35 @@ function testreadRange(){
 
 }
 
+function testfinder() {
 
+  const sheet1 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("2024");
+  const sheet2 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("2023");
+  const text = "Categories"
 
+  expectToEqual(finder(sheet1, text).getColumn(), 148);
+  expectToEqual(finder(sheet2, text).getColumn(), 100);
 
+  const text2 = "Weekday"
+
+  expectToEqual(finder(sheet1, text2).getColumn(),146);
+  expectToEqual(finder(sheet2, text2).getColumn(),98);
+  
+}
+
+function testcreateHtmlTable() {
+  
+  var data = Object.fromEntries([
+    [["Header"], ["Column 1", "Column 2","Column 3"]],
+    ["January" , [10,9,8]],
+    ["February" , [7,6,5]],
+    ["March" , [4,3,2]],
+        ["April" , [1,0,-1]],
+        ["May" , [-2,-3,-4]]
+]);
+
+  expectToExist(createHtmlTable(data).getContent().length);
+}
 
 
 

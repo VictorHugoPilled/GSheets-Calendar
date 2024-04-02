@@ -16,10 +16,10 @@ const SIXHOURS = 21600;
 * @params {number} [column1=2] - second row in the range
 * @params {string} categoriesColumnHeader - header for column with list of categories
 */
-function Calendar(cellsPerHour, row1 = 2, column1 = 2){
+function Calendar(row1 = 2, column1 = 2){
 
-  if (typeof cellsPerHour !== 'number') {
-      throw new Error('Invalid input: cellsPerHour must be a number');
+  if (typeof row1 !== 'number' || typeof column1 !== 'number') {
+      throw new Error('Invalid input: numbers only');
     }
 
   try {
@@ -27,20 +27,24 @@ function Calendar(cellsPerHour, row1 = 2, column1 = 2){
       this.id = SpreadsheetApp.getActiveSpreadsheet().getId();
       this.sheet = SpreadsheetApp.getActiveSheet();
       this.year = this.sheet.getSheetName();
-      this.cellsPerHour = cellsPerHour;
-      
+
       this.row1 = row1;
       this.column1 = column1;
 
-      // use cellsPerHour to calculate how many cells are in the full calendar range
-      this.hours = HOURSINADAY;
-      this.columns = (this.hours * this.cellsPerHour); 
-    
       // use sheetname to get days in the year. 
       // last row is days
       this.days = daysIn(this.year); 
       this.rows = this.days;
 
+      const wordInLastColumn = "Weekday";
+      const lastColumn = finder(this.sheet, wordInLastColumn).getColumn() - this.column1;
+
+      this.cellsPerHour = lastColumn/HOURSINADAY;
+
+      // use cellsPerHour to calculate how many cells are in the full calendar range
+      this.hours = HOURSINADAY;
+      this.columns = (this.hours * this.cellsPerHour); 
+    
       this.totalCells = (this.rows * this.columns);
 
       this.range = sheetRangeToAlNotation(this.year,this.row1,this.column1,this.rows,this.columns);
@@ -58,7 +62,7 @@ function Calendar(cellsPerHour, row1 = 2, column1 = 2){
 
       this.rangeArguments = Object.fromEntries([
         ['Today', [Array.from(this.calendar).length - DAYLENGTH, DAYLENGTH]],
-        ['Yesterday', [Array.from(this.calendar).length - DAYLENGTH, DAYLENGTH]],
+        ['Yesterday', [Array.from(this.calendar).length - (2*DAYLENGTH), DAYLENGTH]],
         ['Current Week', [Array.from(this.calendar).length - WEEKLENGTH,WEEKLENGTH]],
         ['Previous Week', [Array.from(this.calendar).length - (WEEKLENGTH * 2),WEEKLENGTH]],
         ['Current Month', [Array.from(this.calendar).length - MONTHLENGTH,MONTHLENGTH]],
@@ -95,36 +99,31 @@ Calendar.prototype.notesOfAYear = function() {
 * @param {boolean} [checkCache=false] - should cache be checked for a return value
 * @return {Array<String>} the list of categories in a sheet
 * */
-Calendar.prototype.getSheetCategories = function(categoriesColumnHeader, checkCache=false) {
+Calendar.prototype.getSheetCategories = function(categoryColumnsHeader = "Categories",checkCache=false) {
 
-  if (typeof categoriesColumnHeader !== 'string') {
-      throw new Error('Invalid input: categoriesColumnHeader must be a string');
-    }
 
   try {
-
-      const key = `${this.sheet.getName()}_${categoriesColumnHeader}`;
+      const key = `${this.sheet.getName()}_${this.categoryColumnsHeader}`;
       if (checkCache == true && getCache(key) != null) {
         return getCache(key);
         }
-
-      // Finds Les Catégories 
-      const categories = this.sheet.createTextFinder(categoriesColumnHeader).matchCase(true).matchEntireCell(true).findNext();
+      
+      const categoriesHeader = finder(this.sheet,categoryColumnsHeader);
       
       //Begining row and column address
-      const categoriesCol1 = categories.getColumn();
+      const categoriesCol1 = categoriesHeader.getColumn();
       // Add one because we don't need col
-      const categoriesRow1 = categories.getRow() + 1;
+      const categoriesRow1 = categoriesHeader.getRow() + 1;
 
       //Move down to last row in range of categories - 2(-1 since we added one to the first row + 
       // -1 since last we are passing the row difference)
-      const rows = categories.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - 2;
+      const rows = categoriesHeader.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - 2;
       const columns = 1;     
       
       const categoriesA1 = sheetRangeToAlNotation(this.year,categoriesRow1,categoriesCol1,rows ,columns);
-      const categoriesRange = readRange(this.id,categoriesA1).flat();
-      putCache(key,categoriesRange,SIXHOURS);
-      return categoriesRange;
+      const categories = readRange(this.id,categoriesA1).flat();
+      putCache(key,categories,SIXHOURS);
+      return categories;
 
   }
   catch (err) {
@@ -135,48 +134,38 @@ Calendar.prototype.getSheetCategories = function(categoriesColumnHeader, checkCa
 
   /**
    * @function calculations
-   * @params {string} calculation - the name of the calculation
    * @param {boolean} [checkCache=false] - should cache be checked for a return value
-   * return {number} percentage of the year that has passed
+   * return {Object} object containing the calculation and the corresponding current number
    * */
-Calendar.prototype.calendarCalculations = function(calculation, checkCache=false) {
+Calendar.prototype.calendarCalculations = function(checkCache=false) {
 
-    if (typeof calculation !== 'string') {
-      throw new Error('Invalid input: calculation must be a string');
-    }
 
     try {
-        const key = `${this.sheet.getName()}_${calculation}`;
+        const key = `${this.year}`;
         if (checkCache == true && getCache(key) != null) {
           return getCache(key);
         }
 
-      const hoursPassed = this.notesOfAYear().length/this.cellsPerHour;
-      const daysPassed = Math.floor((hoursPassed/DAYLENGTH)/HOURSINADAY);
-      const weeksPassed = Math.floor(daysPassed/WEEKLENGTH);
-      const monthsPassed = Math.floor(weeksPassed/WEEKSINAMONTH)
+        const hoursPassed = this.notesOfAYear().length/this.cellsPerHour;
+        const daysPassed = Math.floor((hoursPassed/DAYLENGTH)/HOURSINADAY);
+        const weeksPassed = Math.floor(daysPassed/WEEKLENGTH);
+        const monthsPassed = Math.floor(weeksPassed/WEEKSINAMONTH)
 
-      const calculations = Object.fromEntries([
-        ["Percentage of the year",this.notesOfAYear().length/this.totalCells],
-        ["Hours passed", hoursPassed],
+        const calculations = Object.fromEntries([
+        ["Percentage of the year",rounder(this.notesOfAYear().length/this.totalCells)],
+        ["Hours passed", rounder(hoursPassed)],
         ["Days passed", Math.floor((hoursPassed/DAYLENGTH)/HOURSINADAY)],
         ["Weeks passed",weeksPassed],
         ["Months passed",monthsPassed]
         ])
 
-      const calculationsSet = new Set(Object.keys(calculations));
 
-      if (calculationsSet.has(calculation)){
-          const result = calculations[calculation];
-          putCache(key,result,SIXHOURS);
-          return result;
-        }
+        putCache(key,calculations,TENMINUTES);
+        return calculations;
 
-      Logger.log(`Couldn't find ${calculation} in ${calculationsSet}`);
-      return;
     }
-    catch (err) {
-      handleError(err)
+      catch (err) {
+        handleError(err)
     }
 }
 
@@ -203,50 +192,46 @@ Calendar.prototype.calendarSlicer = function(dayNumber, sliceLength) {
   /**
    * @function categoryRangeCalculations
   * @params {string} category - a category
-  * @params {string} rangeName - the name of the range
-  * @params {string} calculation - the name of the calculation
   * @param {boolean} [checkCache=false] - should cache be checked for a return value
    * return {number} total notes for a category for today
   */
-Calendar.prototype.categoryRangeCalculations = function(category, rangeName, calculation, checkCache=false) {
+Calendar.prototype.categoryCalculations = function(category, checkCache=false) {
 
-    if (typeof category !== 'string' || typeof category !== 'string' || typeof category !== 'string') {
-      throw new Error('Invalid input: string inputs only');
+    if (typeof category !== 'string') {
+      throw new Error('Invalid input: category myst be a string');
     }
 
     try {
+          var calculations = new Object()
+          Object.entries(this.rangeArguments).forEach((entry) => {
 
-        const key = `${category}_${rangeName}_${this.cellsPerHour}_${calculation}`;
-        if (checkCache == true && getCache(key) != null) {
-          return getCache(key);
-        }
+            const [rangeName, rangeNumbers] = entry;
+            const key = `${this.year}_${category}_${rangeName}`;
 
-        const rangeArgumentsSet = new Set(Object.keys(this.rangeArguments));
+            if (checkCache == true && getCache(key) != null) {
+              calculations[rangeName] = getCache(key);
+            }
 
-        if (!(rangeArgumentsSet.has(rangeName))){
-          Logger.log(`Couldn't find ${rangeName}`);
-          return;
-        }
-        
-        const range = this.calendarSlicer(...this.rangeArguments[rangeName]);
+            else {
+                          
+              const range = this.calendarSlicer(...rangeNumbers);
 
-        const calculations = Object.fromEntries([
-        ["Total Notes",categorySum(range,category)],
-        ["Percentage",(categorySum(range,category)/range.length)*100],
-        ["Total Hours",categorySum(range,category)/this.cellsPerHour],
-        ["Average Time in Hours", (categorySum(range,category)/this.cellsPerHour)/this.rangeArguments[rangeName][1]],
-        ]);
+              calculations[rangeName] = Object.fromEntries([
+              ["Total Notes",categorySum(range,category)],
+              ["Percentage",(categorySum(range,category)/range.length)*100],
+              ["Total Hours",categorySum(range,category)/this.cellsPerHour],
+              ["Average Time in Hours", (categorySum(range,category)/this.cellsPerHour)/this.rangeArguments[rangeName][1]],
+              ]);
+
+              putCache(key,calculations[rangeName],this.rangeExpirations[rangeName]);
+
+            }
+            
+          }
+
+          )     
         
-        const calculationsSet = new Set(Object.keys(calculations));
-        
-        if (!(calculationsSet.has(calculation))) {
-          Logger.log(`Couldn't find ${calculation} in ${calculationsSet}`);
-          return;
-        }
-        
-        const total = calculations[calculation];
-        putCache(key,total,this.rangeExpirations[rangeName]);
-        return total;
+          return calculations;
     }
     
     catch (err) {
