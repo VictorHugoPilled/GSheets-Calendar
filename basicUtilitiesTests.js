@@ -111,23 +111,16 @@ function testfinder() {
   
 }
 
-function testcreateHtmlTable() {
-  
-  var data = Object.fromEntries([
-    [["Header"], ["Column 1", "Column 2","Column 3"]],
-    ["January" , [10,9,8]],
-    ["February" , [7,6,5]],
-    ["March" , [4,3,2]],
-        ["April" , [1,0,-1]],
-        ["May" , [-2,-3,-4]]
-]);
 
-  expectToExist(createHtmlTable(data).getContent().length);
+
+function testObjectFromTwoLists() {
+
+  const list1 = [1,2,3]
+  const list2 = ["yellow", "blue"]
+  const result = { 1: ["yellow", "blue"], 2: ["yellow", "blue"], 3: ["yellow", "blue"] }
+  expectToEqual(Object.entries(objectFromTwoLists(list1,list2)),Object.entries(result))
+
 }
-
-
-
-
 
 
 

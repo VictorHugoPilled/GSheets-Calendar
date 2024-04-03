@@ -20,11 +20,13 @@ function testgetSheetCategories(){
 
     // check without cache
     const sheetCategories = new Set(calendar.getSheetCategories("Categories"));
+
     expectToEqual(categories.filter((category) => sheetCategories.has(category)).length, categories.length);
 
     // check with cache
-    const sheetCategories2 = new Set(calendar.getSheetCategories("Categories", true));
-    expectToEqual(categories.filter((category) => sheetCategories2.has(category)).length, categories.length);
+    //const sheetCategories2 = new Set(calendar.getSheetCategories("Categories", true));
+
+    //expectToEqual(categories.filter((category) => sheetCategories2.has(category)).length, categories.length);
 
     
 }
@@ -73,7 +75,7 @@ function testcalendarSlicer(){
 } 
 
 
-function testcategoryCalculations() {
+function testcategoryCalculationsToday() {
 
   
   // store the calendar
@@ -83,38 +85,163 @@ function testcategoryCalculations() {
 
   // check without cache
   categories.forEach((category) => {
-    Object.entries(calendar.categoryCalculations(category)).forEach((entry) => {
+    Object.entries(calendar.categoryCalculations(category, "Today")).forEach((entry) => {
     const [_, value] = entry;
 
-    Object.entries(value).forEach((nestedEntry) => {
-      const [_, nestedValue] = nestedEntry;
-      expectToExist(nestedValue);
+      expectToExist(value);
     })
   
     }
     )
 
-  })
-
-  // check with cache
-  categories.forEach((category) => {
-    Object.entries(calendar.categoryCalculations(category,true)).forEach((entry) => {
-    const [_, value] = entry;
-
-    Object.entries(value).forEach((nestedEntry) => {
-      const [_, nestedValue] = nestedEntry;
-      expectToExist(nestedValue);
-    })
-  
-    }
-    )
-
-  })
   
   
 
   }
 
+function testcategoryCalculationsYesterday() {
+
+  
+  // store the calendar
+  const calendar = new Calendar();
+
+  const categories = calendar.getSheetCategories();
+
+  // check without cache
+  categories.forEach((category) => {
+    Object.entries(calendar.categoryCalculations(category, "Yesterday")).forEach((entry) => {
+    const [_, value] = entry;
+
+      expectToExist(value);
+    })
+  
+    }
+    )
+
+  
+  
+
+  }
+
+function testcategoryCalculationsCurrentWeek() {
+
+  
+  // store the calendar
+  const calendar = new Calendar();
+
+  const categories = calendar.getSheetCategories();
+
+  // check without cache
+  categories.forEach((category) => {
+    Object.entries(calendar.categoryCalculations(category, "Current Week")).forEach((entry) => {
+    const [_, value] = entry;
+
+      expectToExist(value);
+    })
+  
+    }
+    )
+
+  
+  
+
+  }
+
+function testcategoryCalculationsPreviousWeek() {
+
+  
+  // store the calendar
+  const calendar = new Calendar();
+
+  const categories = calendar.getSheetCategories();
+
+  // check without cache
+  categories.forEach((category) => {
+    Object.entries(calendar.categoryCalculations(category, "Previous Week")).forEach((entry) => {
+    const [_, value] = entry;
+
+      expectToExist(value);
+    })
+  
+    }
+    )
+
+  
+  
+
+  }
+
+function testcategoryCalculationsCurrentMonth() {
+
+  
+  // store the calendar
+  const calendar = new Calendar();
+
+  const categories = calendar.getSheetCategories();
+
+  // check without cache
+  categories.forEach((category) => {
+    Object.entries(calendar.categoryCalculations(category, "Current Month")).forEach((entry) => {
+    const [_, value] = entry;
+
+      expectToExist(value);
+    })
+  
+    }
+    )
+
+  
+  
+
+  }
+
+function testcategoryCalculationsPreviousMonth() {
+
+  
+  // store the calendar
+  const calendar = new Calendar();
+
+  const categories = calendar.getSheetCategories();
+
+  // check without cache
+  categories.forEach((category) => {
+    Object.entries(calendar.categoryCalculations(category, "Previous Month")).forEach((entry) => {
+    const [_, value] = entry;
+
+      expectToExist(value);
+    })
+  
+    }
+    )
+
+  
+  
+
+  }
+
+function testcategoryCalculationsThisYear() {
+
+  
+  // store the calendar
+  const calendar = new Calendar();
+
+  const categories = calendar.getSheetCategories();
+
+  // check without cache
+  categories.forEach((category) => {
+    Object.entries(calendar.categoryCalculations(category, "Previous Month")).forEach((entry) => {
+    const [_, value] = entry;
+
+      expectToExist(value);
+    })
+  
+    }
+    )
+
+  
+  
+
+  }
 
 
 

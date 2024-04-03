@@ -1,8 +1,8 @@
 /**
  * @generator
  * @function range
- * @params {number} start - a number 
- * @params {number} end - a number
+ * @param {number} start - a number 
+ * @param {number} end - a number
  * @yield {number} next number in the range 
  */
 function* range(start,end) {
@@ -13,8 +13,8 @@ function* range(start,end) {
 
 /**
  * @function categorySum
- * @params {Array<String>} notes - an array of notes
- * @params {string} category - a category from the sheet
+ * @param {Array<String>} notes - an array of notes
+ * @param {string} category - a category from the sheet
  * @return {number} total sum of all the notes of a category in the array
  */
 function categorySum(notes, category) {
@@ -23,7 +23,7 @@ function categorySum(notes, category) {
 
 /**
  * @customfunction
- * @params {number} year - a year
+ * @param {number} year - a year
  * @return {number} days in a new year
  */
 function daysIn(year) {
@@ -59,7 +59,7 @@ function randomNumber(number) {
 
 /**
  * @function columnToLetter
- * @params {number} columnNumber - a columnNumber from 0 to infinity
+ * @param {number} columnNumber - a columnNumber from 0 to infinity
  * @return {string} letter that corresponds to the columnNumber
  * 
  */
@@ -75,10 +75,10 @@ function columnNumberToLetter(columnNumber) {
 
 
 /**
- * @params {number} row1 - first row in range
- * @params {number} column1 - first column in the range
- * @params {number} rows - number of rows you want
- * @params {number} columns - number of columns you want
+ * @param {number} row1 - first row in range
+ * @param {number} column1 - first column in the range
+ * @param {number} rows - number of rows you want
+ * @param {number} columns - number of columns you want
  * @function columnToLetter
  */
 function convertToAlNotation(row1, column1, rows,columns) {
@@ -94,11 +94,11 @@ function convertToAlNotation(row1, column1, rows,columns) {
 }
 
 /**
- * @params {number} year, eg. 2024 
- * @params {number} row1 - first row in range
- * @params {number} column1 - first column in the range
- * @params {number} rows - number of rows you want
- * @params {number} columns - number of columns you want
+ * @param {number} year, eg. 2024 
+ * @param {number} row1 - first row in range
+ * @param {number} column1 - first column in the range
+ * @param {number} rows - number of rows you want
+ * @param {number} columns - number of columns you want
  * @function columnToLetter
  */
 function sheetRangeToAlNotation(year,row1, column1, rows,columns){              
@@ -108,8 +108,8 @@ function sheetRangeToAlNotation(year,row1, column1, rows,columns){
 
 /**
  * @customfunction
- * @params {number} spreadsheetId - a spreadsheet id
- * @params {string} range - a range in A1 Notation
+ * @param {number} spreadsheetId - a spreadsheet id
+ * @param {string} range - a range in A1 Notation
  * @return {Array<Array<String>>} the full calendar as a 2d array
  */
 function readRange(spreadsheetId,range) {
@@ -170,7 +170,7 @@ function expectToEqual(actual, expected) {
 
 /**
  * @function
- * @params {string} key - Anything
+ * @param {string} key - Anything
  * @return {any} value or null
  */
 function getCache(key){
@@ -184,9 +184,9 @@ function getCache(key){
 
 /**
  * @function putCache
- * @params {string} key - a key name
- * @params {any} value - a value 
- * @params {number} expirationInSeconds - time that item will stay in cache
+ * @param {string} key - a key name
+ * @param {any} value - a value 
+ * @param {number} expirationInSeconds - time that item will stay in cache
  */
 function putCache(key,value, expirationInSeconds){
 
@@ -200,8 +200,8 @@ function putCache(key,value, expirationInSeconds){
 
 /**
 * @function finder
-* @params {Sheet} sheet - a sheet to search
-* @params {String} value - a string to find in the sheet
+* @param {Sheet} sheet - a sheet to search
+* @param {String} value - a string to find in the sheet
 * @return {Range}
 */
 function finder(sheet, value) {
@@ -209,42 +209,12 @@ function finder(sheet, value) {
 } 
 
 
-/**
-* @function escape
-* @params {string} htmlStr - any string 
-* @returns {string} a string with special character escaped
-*/
-function escape(htmlStr) {
-
-   return htmlStr.replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#39;");        
-
-}
-/**
- * 
-    < with &lt;
-    > with &gt;
-    " with &quot;
-    ' with &#39;
-    & with &amp;
- */
-function testescape(htmlStr) {
-   return htmlStr.replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#39;");        
-
-}
 
 
 /**
 * @function rounder
-* @params {number} num - number to round
-* @params {number} decimals - decimals to round
+* @param {number} num - number to round
+* @param {number} decimals - decimals to round
 * @returns {number} 
 */
 function rounder(x, digits=2) {
@@ -253,57 +223,14 @@ function rounder(x, digits=2) {
 
 
 /**
- * @function createHtmlTable
- * @params {Object} data - an object containing date that will be used to fill the table
- * @params {String} header - a name for the sidebar 
- * @return {HTML} can be directly used in showSidebar 
+ * @function objectFromTwoLists
+ * @param {Array} keys - list of keys
+ * @param {Array} values - list of values for each key
+ * @return {Object}
  */
-function createHtmlTable(data, header = 'My Stats') {
-
- // Create the table
- var htmlOutput = HtmlService.createHtmlOutput().setTitle(header);
-
- // Start building the table.
- htmlOutput.append('<table border="1">');
- htmlOutput.append(`<style>"
-             "table, th, td { border: 1px solid black; padding: 5px; }"
-             "</style>`);
-
-  // Iterate through the object
- Object.entries(data).forEach(entry => {
-  var [key, value] = entry;
-
-  // escape any special characters
-  if (typeof key == 'string') {
-    key = escape(key);
-   }
-
-  if (typeof value == 'string') {
-    value = escape(value);
-   }
-  
-  // create a row
-  htmlOutput.append(`<tr>`);
-
-  // insert the key
-  htmlOutput.append(`<td> ${key} </td>`);
-
-  // input can be a list or single item
-  typeof value == "object" ? 
-  value.forEach((val) => {
-    htmlOutput.append(`<td> ${val} </td>`)}) : htmlOutput.append(`<td> ${value} </td>`);
-
-  
-  // end of the row
-  htmlOutput.append(`<tr>`);
-});
-
- // Close the table.
- htmlOutput.append('</table>');
- return htmlOutput;
+function objectFromTwoLists(keys,values) {
+  return Object.fromEntries(keys.map((entry) => [entry,values]))
 }
-
-
 
 
 

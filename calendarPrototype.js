@@ -11,10 +11,10 @@ const SIXHOURS = 21600;
 /**
 * Base calendar function
 * @constructor
-* @params {number} cellsPerHour - cells per hour
-* @params {number} [row1=2] - first row in the range
-* @params {number} [column1=2] - second row in the range
-* @params {string} categoriesColumnHeader - header for column with list of categories
+* @param {number} cellsPerHour - cells per hour
+* @param {number} [row1=2] - first row in the range
+* @param {number} [column1=2] - second row in the range
+* @param {string} categoriesColumnHeader - header for column with list of categories
 */
 function Calendar(row1 = 2, column1 = 2){
 
@@ -103,9 +103,9 @@ Calendar.prototype.getSheetCategories = function(categoryColumnsHeader = "Catego
 
 
   try {
-      const key = `${this.sheet.getName()}_${this.categoryColumnsHeader}`;
+      const key = `${this.sheet.getName()}_${categoryColumnsHeader}`;
       if (checkCache == true && getCache(key) != null) {
-        return getCache(key);
+        return JSON.parse(getCache(key));
         }
       
       const categoriesHeader = finder(this.sheet,categoryColumnsHeader);
@@ -122,7 +122,6 @@ Calendar.prototype.getSheetCategories = function(categoryColumnsHeader = "Catego
       
       const categoriesA1 = sheetRangeToAlNotation(this.year,categoriesRow1,categoriesCol1,rows ,columns);
       const categories = readRange(this.id,categoriesA1).flat();
-      putCache(key,categories,SIXHOURS);
       return categories;
 
   }
@@ -171,8 +170,8 @@ Calendar.prototype.calendarCalculations = function(checkCache=false) {
 
   /**
    * @function calendarSlicer
-   * @params {number} dayNumber - day of the year (0,365)
-   * @params {number} sliceLength - length of the range in days
+   * @param {number} dayNumber - day of the year (0,365)
+   * @param {number} sliceLength - length of the range in days
    * return {Array<String>} array of all the notes for a single day
   */
 Calendar.prototype.calendarSlicer = function(dayNumber, sliceLength) {
@@ -190,47 +189,34 @@ Calendar.prototype.calendarSlicer = function(dayNumber, sliceLength) {
     }
 }
   /**
-   * @function categoryRangeCalculations
-  * @params {string} category - a category
+   * @function categoryCalculations
+  * @param {string} category - a category
+  * @param {string} rangeName - name of a range to get data for
   * @param {boolean} [checkCache=false] - should cache be checked for a return value
    * return {number} total notes for a category for today
   */
-Calendar.prototype.categoryCalculations = function(category, checkCache=false) {
+Calendar.prototype.categoryCalculations = function(category, rangeName, checkCache=false) {
 
     if (typeof category !== 'string') {
       throw new Error('Invalid input: category myst be a string');
     }
 
     try {
-          var calculations = new Object()
-          Object.entries(this.rangeArguments).forEach((entry) => {
-
-            const [rangeName, rangeNumbers] = entry;
-            const key = `${this.year}_${category}_${rangeName}`;
-
-            if (checkCache == true && getCache(key) != null) {
-              calculations[rangeName] = getCache(key);
+          const key = `${this.year}_${category}_${rangeName}`;
+          if (checkCache == true && getCache(key) != null) {
+              return getCache(key);
             }
 
-            else {
-                          
-              const range = this.calendarSlicer(...rangeNumbers);
-
-              calculations[rangeName] = Object.fromEntries([
+          const range = this.calendarSlicer(...this.rangeArguments[rangeName]);
+          
+          const calculations = Object.fromEntries([
               ["Total Notes",categorySum(range,category)],
-              ["Percentage",(categorySum(range,category)/range.length)*100],
-              ["Total Hours",categorySum(range,category)/this.cellsPerHour],
-              ["Average Time in Hours", (categorySum(range,category)/this.cellsPerHour)/this.rangeArguments[rangeName][1]],
+              ["Percentage",rounder((categorySum(range,category)/range.length)*100)],
+              ["Total Hours",rounder(categorySum(range,category)/this.cellsPerHour)],
+              ["Average Time in Hours", rounder((categorySum(range,category)/this.cellsPerHour)/this.rangeArguments[rangeName][1])],
               ]);
-
-              putCache(key,calculations[rangeName],this.rangeExpirations[rangeName]);
-
-            }
-            
-          }
-
-          )     
-        
+          
+          putCache(key,calculations,this.rangeExpirations[rangeName]);
           return calculations;
     }
     

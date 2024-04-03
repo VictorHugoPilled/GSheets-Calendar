@@ -1,30 +1,29 @@
+function testcalendarCalculationsHTML() {
 
-function testcreateButtons(){
-
-  const array = ["Yellow", "Blue", "Yellow", "Green", "Red", "Yellow", "Orange", "Blue", "Red"];
-
-  const func = `google.script.run.popupCreator(this.value)`;
-
-  expectToExist(createButtons(array,func).getContent().length);
-
-  
-}
-
-function testcalendarNotes() {
-
-  expectToExist(calendarNotes().getContent().length);
+  expectToExist(calendarCalculationsHTML().getContent().length);
 
 }
 
 
-function testcategoryNotes() {
+function testcategoryCalculationsHTML() {
   
+  const calendar = new Calendar();
+
   // for each category 
   const categories = calendar.getSheetCategories();
 
+  // get the ranges for the buttons
+  const ranges = Object.keys(calendar.rangeArguments);
+
   categories.forEach((category) => {
+    
+    ranges.forEach((rangeName) => {
+      expectToExist(categoryCalculationsHTML(category,rangeName).getContent().length);
 
   })
+
+  })
+
 
 }
 
