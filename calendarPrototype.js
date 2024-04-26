@@ -122,6 +122,7 @@ Calendar.prototype.getSheetCategories = function(categoryColumnsHeader = "Catego
       
       const categoriesA1 = sheetRangeToAlNotation(this.year,categoriesRow1,categoriesCol1,rows ,columns);
       const categories = readRange(this.id,categoriesA1).flat();
+      putCache(key,categories,SIXHOURS);
       return categories;
 
   }
@@ -192,10 +193,11 @@ Calendar.prototype.calendarSlicer = function(dayNumber, sliceLength) {
    * @function categoryCalculations
   * @param {string} category - a category
   * @param {string} rangeName - name of a range to get data for
+  * @param {string} calculation - a specific calculation to retrieve
   * @param {boolean} [checkCache=false] - should cache be checked for a return value
    * return {number} total notes for a category for today
   */
-Calendar.prototype.categoryCalculations = function(category, rangeName, checkCache=false) {
+Calendar.prototype.categoryCalculations = function(category, rangeName, checkCache=false, calculation=null) {
 
     if (typeof category !== 'string') {
       throw new Error('Invalid input: category myst be a string');
@@ -216,6 +218,10 @@ Calendar.prototype.categoryCalculations = function(category, rangeName, checkCac
               ["Average Time in Hours", rounder((categorySum(range,category)/this.cellsPerHour)/this.rangeArguments[rangeName][1])],
               ]);
           
+          if (calculation != null) {
+            return calculations[calculation];
+          }
+          
           putCache(key,calculations,this.rangeExpirations[rangeName]);
           return calculations;
     }
@@ -225,6 +231,8 @@ Calendar.prototype.categoryCalculations = function(category, rangeName, checkCac
     }
 
  }
+
+
 
 
 

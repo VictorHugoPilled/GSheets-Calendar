@@ -1,15 +1,27 @@
-function testjoursDans(){
+function testdaysIn(){
 
-  expectToEqual(joursDans(2001),365);
-  expectToEqual(joursDans(2002),365);
-  expectToEqual(joursDans(2024),366);
-  expectToEqual(joursDans(2020),366);
-  expectToEqual(joursDans(2000),366);
-  expectToEqual(joursDans(1700),365);
-  expectToEqual(joursDans(1800),365);
-  expectToEqual(joursDans(1900),365);
-  expectToEqual(joursDans(1800),365);
-  expectToEqual(joursDans(1600),366);
+  const years = [[]]
+
+  Object.fromEntries([
+        ['Today', TENMINUTES],
+        ['Yesterday', SIXHOURS],
+        ['Current Week', SIXHOURS],
+        ['Previous Week', SIXHOURS],
+        ['Current Month', SIXHOURS],
+        ['Previous Month', SIXHOURS],
+        ['This Year', SIXHOURS]
+        ])
+
+  expectToEqual(daysIn(2001),365);
+  expectToEqual(daysIn(2002),365);
+  expectToEqual(daysIn(2024),366);
+  expectToEqual(daysIn(2020),366);
+  expectToEqual(daysIn(2000),366);
+  expectToEqual(daysIn(1700),365);
+  expectToEqual(daysIn(1800),365);
+  expectToEqual(daysIn(1900),365);
+  expectToEqual(daysIn(1800),365);
+  expectToEqual(daysIn(1600),366);
 }
 
 
@@ -121,6 +133,46 @@ function testObjectFromTwoLists() {
   expectToEqual(Object.entries(objectFromTwoLists(list1,list2)),Object.entries(result))
 
 }
+
+/**
+ * @generator
+ * @function generateTimeRange
+ * @param {number} startHour - an hour (0,24)
+ * @param {number} endHour - an hour (0,24)
+ * @param {number} step - minutes (0,60)
+ * */
+function* generateTimeRange(startHour,endHour,step) {
+
+  // 
+  var startHourInMinute = startHour * 60;
+  const endHourInMinute = endHour * 60;
+
+  // Range is inclusive, endHour is last value in range
+
+  while (startHourInMinute <= endHourInMinute) {
+
+    // getting hours of day in 0-24 format
+    let hh = Math.floor(startHourInMinute / 60); 
+    // getting minutes of the hour in 0-55 format
+    let mm = startHourInMinute % 60; 
+
+    let time = `${('0' + (hh % 24)).slice(-2)}:${('0' + mm).slice(-2)}`;
+    yield time
+
+    startHourInMinute += step;
+    }
+
+}
+
+function testgenerateTimeRange(){
+ 
+  const interval = 10; //minutes interval
+  const startHour = 0; // start time in minutes
+  const endHour = 24; // end time in minutes
+  const foo = generateTimeRange(startHour, endHour, interval);
+  console.log(Array.from(foo));
+}
+
 
 
 

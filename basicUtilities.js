@@ -25,25 +25,24 @@ function categorySum(notes, category) {
  * @customfunction
  * @param {number} year - a year
  * @return {number} days in a new year
+ * 
  */
 function daysIn(year) {
 
-  // this is a switch case
-
-  // Every year that is exactly divisible by four is a leap year
-  if(year % 4 != 0){
-    return 365;
-  }
-  
-  // Centurial years are leap years if they are exactly divisible by 400
-  if(year % 4 == 0 && year % 400 == 0){
+  switch (year) {
+  case year % 4 != 0:
     return 366;
+  case year % 4 == 0 && year % 400 == 0:
+    return 366
+  case year % 4 == 0 && year % 100 != 0:
+    return 365
+  default:
+    return 365
   }
-
-  // Every year that is exactly divisible by four is a leap year, except for years that are exactly divisible by 100.
-  return year % 4 == 0 && year % 100 != 0? 366: 365;
 
 }
+
+
 
 /**
  * @function randomNumber

@@ -24,9 +24,9 @@ function testgetSheetCategories(){
     expectToEqual(categories.filter((category) => sheetCategories.has(category)).length, categories.length);
 
     // check with cache
-    //const sheetCategories2 = new Set(calendar.getSheetCategories("Categories", true));
+    const sheetCategories2 = new Set(calendar.getSheetCategories("Categories", true));
 
-    //expectToEqual(categories.filter((category) => sheetCategories2.has(category)).length, categories.length);
+    expectToEqual(categories.filter((category) => sheetCategories2.has(category)).length, categories.length);
 
     
 }
@@ -229,11 +229,31 @@ function testcategoryCalculationsThisYear() {
 
   // check without cache
   categories.forEach((category) => {
-    Object.entries(calendar.categoryCalculations(category, "Previous Month")).forEach((entry) => {
+    Object.entries(calendar.categoryCalculations(category, "This Year")).forEach((entry) => {
     const [_, value] = entry;
 
       expectToExist(value);
     })
+  
+    }
+    )
+
+  
+  
+
+  }
+
+function testspecificcategoryCalculationsThisYear() {
+
+  
+  // store the calendar
+  const calendar = new Calendar();
+
+  const categories = calendar.getSheetCategories();
+
+  // check without cache
+  categories.forEach((category) => {
+    console.log(calendar.categoryCalculations(category, "This Year", false, "Percentage"))
   
     }
     )

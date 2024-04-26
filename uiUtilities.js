@@ -1,4 +1,41 @@
 /**
+* @function escapeHTML
+* @param {string} htmlStr - any string 
+* @return {string} a string with special character escapeHTMLd
+*/
+function escapeHTML(htmlStr) {
+
+   return htmlStr.replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#39;");
+}
+
+
+/**
+ * @function sidebarCreator
+ * @param {HTML}
+ */
+function sidebarCreator(html) {
+  // pass the html to the sidebar
+  SpreadsheetApp.getUi() 
+  .showSidebar(html);
+
+}
+
+/**
+ * @function popupCreator
+ * @param {HTML} html - to be displayed
+ * @param {string} popuptite - any string to be used as a title
+ */
+function popupCreator(html,popuptitle) {
+
+  SpreadsheetApp.getUi().showModalDialog(html, popuptitle);
+
+}
+
+/**
  * @function createHtmlTable
  * @param {Object} data - an object containing date that will be used to fill the table
  * @param {String} header - a name for the sidebar 
@@ -114,39 +151,44 @@ function createButtonsTable(data, buttonFunction, header) {
 
 
 /**
- * @function sidebarCreator
- * @param {HTML}
- */
-function sidebarCreator(html) {
-  // pass the html to the sidebar
-  SpreadsheetApp.getUi() 
-  .showSidebar(html);
+* @function calendarCalculationsHTML
+* return {HTML} object containing notes for each calculation
+ * */
+function calendarCalculationsHTML(){
 
-}
+    try {
+      const calendar = new Calendar();
+      const calculations = calendar.calendarCalculations();
+      return createHtmlTable(calculations,calendar.year);
 
-/**
- * @function popupCreator
- * @param {HTML} html - to be displayed
- * @param {string} popuptite - any string to be used as a title
- */
-function popupCreator(html,popuptitle) {
-
-  SpreadsheetApp.getUi().showModalDialog(html, popuptitle);
-
+    }
+    catch (err) {
+      handleError(err);
+    }
+    
 }
 
 
-
 /**
-* @function escapeHTML
-* @param {string} htmlStr - any string 
-* @return {string} a string with special character escapeHTMLd
-*/
-function escapeHTML(htmlStr) {
+* @function categoryCalculationsHTML
+* @param {string} category - a category
+* @param {string} rangeName - name of a range to get data for
+* return {Object} sum of all the notes from a single category for a year
+ * */
+function categoryCalculationsHTML(category, rangeName){
 
-   return htmlStr.replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#39;");
-}        
+    if (typeof category !== 'string') {
+      throw new Error('Invalid input: category must be a string');
+    }
+
+    try {
+      const calendar = new Calendar();
+      const calculations = calendar.categoryCalculations(category,rangeName);
+      return createHtmlTable(calculations,category);
+
+    }
+    catch (err) {
+      handleError(err);
+    }
+    
+}
