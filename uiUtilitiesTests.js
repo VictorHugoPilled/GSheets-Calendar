@@ -91,3 +91,18 @@ function testcategoryCalculationsHTML() {
 
 
 }
+
+
+function testcharter() {
+
+    var data = [['January', 10, 1],
+    ['February', 12, 1],
+    ['March', 20, 2],
+    ['April', 25, 3]
+    ,['May', 30, 4]]
+    
+    expectToExist(charter(data).getContent().length);
+
+}
+
+
