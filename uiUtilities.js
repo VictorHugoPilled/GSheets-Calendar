@@ -191,6 +191,7 @@ function categoryCalculationsHTML(category, rangeName){
       handleError(err);
     }
 
+}
 
     /**
  * @function chooseCharts
@@ -267,8 +268,4 @@ function charter(dataTable, chartType) {
   htmlOutput.append("<img border=\"1\" src=\"" + imageUrl + "\">");
   return htmlOutput;
 
-}
-
-
-    
 }
