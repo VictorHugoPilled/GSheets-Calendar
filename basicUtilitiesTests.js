@@ -1,36 +1,39 @@
 function testdaysIn(){
 
-  const years = [[]]
+    const years = Object.fromEntries([
+      [2001, 365],
+      [2002, 365],
+      [2024, 366],
+      [2020, 366],
+      [2000, 366],
+      [1800, 365],
+      [1900, 365],
+      [1800, 365],
+      [1600, 366]
+    ])
 
-  Object.fromEntries([
-        ['Today', TENMINUTES],
-        ['Yesterday', SIXHOURS],
-        ['Current Week', SIXHOURS],
-        ['Previous Week', SIXHOURS],
-        ['Current Month', SIXHOURS],
-        ['Previous Month', SIXHOURS],
-        ['This Year', SIXHOURS]
-        ])
+    Object.entries(years).forEach(([key, value]) => {
+	expectToEqual(daysIn(key),value);
+    });
+    
 
-  expectToEqual(daysIn(2001),365);
-  expectToEqual(daysIn(2002),365);
-  expectToEqual(daysIn(2024),366);
-  expectToEqual(daysIn(2020),366);
-  expectToEqual(daysIn(2000),366);
-  expectToEqual(daysIn(1700),365);
-  expectToEqual(daysIn(1800),365);
-  expectToEqual(daysIn(1900),365);
-  expectToEqual(daysIn(1800),365);
-  expectToEqual(daysIn(1600),366);
 }
 
 
 function testrange(){
 
-  expectToExist(Array.from(range(0,1).next().value));
-  expectToExist(Array.from(range(5,10).next().value));
-  expectToExist(Array.from(range(15,144).next().value));
-  expectToExist(Array.from(range(0,144).next().value));
+    const ranges = [
+	[0,1],
+	[5,10],
+	[15,144],
+	[0,144]
+  ]
+
+    ranges.forEach((value) => {
+      expectToExist(Array.from(range(...value)).length);
+    });
+  
+
   
 
 }
@@ -70,24 +73,41 @@ function testcolumnNumberToLetter() {
 }
 
 function testconvertToAlNotation(){
-     
-    expectToEqual(convertToAlNotation(1,1,2,2), "A1:B2");
-    expectToEqual(convertToAlNotation(1,1,30,30), "A1:AD30");
-    expectToEqual(convertToAlNotation(2,2,365,96), "B2:CS366");
-    expectToEqual(convertToAlNotation(2,2,365,144), "B2:EO366"); 
-    expectToEqual(convertToAlNotation(2,2,366,144), "B2:EO367");
+
+    const notation = Object.fromEntries([
+	["A1:B2", [1,1,2,2]],
+	["A1:AD30", [1,1,30,30],],
+	["B2:CS366", [2,2,365,96]],
+	["B2:EO366", [2,2,365,144]],
+	["B2:EO367", [2,2,366,144]]
+    ])
+
+
+    Object.entries(notation).forEach(([key, value]) => {
+	expectToEqual(convertToAlNotation(...value), key);
+    });
+  
+    
     
 
 }
 
 function testsheetRangeToAlNotation(){
-                                          
-    expectToEqual(sheetRangeToAlNotation(2024,1,1,2,2), "2024!A1:B2");
-    expectToEqual(sheetRangeToAlNotation(2023,1,1,30,30), "2023!A1:AD30");
-    expectToEqual(sheetRangeToAlNotation(2022,2,2,365,96), "2022!B2:CS366");
-    expectToEqual(sheetRangeToAlNotation(2021,2,2,365,144), "2021!B2:EO366");
-    expectToEqual(sheetRangeToAlNotation(2020,2,2,366,144), "2020!B2:EO367");
-    
+
+
+    const sheetNotation = Object.fromEntries([
+	["2024!A1:B2", [2024,1,1,2,2]],
+	["2023!A1:AD30", [2023,1,1,30,30]],
+	["2022!B2:CS366", [2022,2,2,365,96]],
+	["2021!B2:EO366", [2021,2,2,365,144]],
+	["2020!B2:EO367", [2020,2,2,366,144]]
+    ])
+
+
+      Object.entries(sheetNotation).forEach(([key, value]) => {
+	expectToEqual(sheetRangeToAlNotation(...value), key);
+    });
+  
 
 }
 
@@ -134,35 +154,6 @@ function testObjectFromTwoLists() {
 
 }
 
-/**
- * @generator
- * @function generateTimeRange
- * @param {number} startHour - an hour (0,24)
- * @param {number} endHour - an hour (0,24)
- * @param {number} step - minutes (0,60)
- * */
-function* generateTimeRange(startHour,endHour,step) {
-
-  // 
-  var startHourInMinute = startHour * 60;
-  const endHourInMinute = endHour * 60;
-
-  // Range is inclusive, endHour is last value in range
-
-  while (startHourInMinute <= endHourInMinute) {
-
-    // getting hours of day in 0-24 format
-    let hh = Math.floor(startHourInMinute / 60); 
-    // getting minutes of the hour in 0-55 format
-    let mm = startHourInMinute % 60; 
-
-    let time = `${('0' + (hh % 24)).slice(-2)}:${('0' + mm).slice(-2)}`;
-    yield time
-
-    startHourInMinute += step;
-    }
-
-}
 
 function testgenerateTimeRange(){
  

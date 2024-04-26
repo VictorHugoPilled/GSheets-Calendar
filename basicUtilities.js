@@ -29,20 +29,12 @@ function categorySum(notes, category) {
  */
 function daysIn(year) {
 
-  switch (year) {
-  case year % 4 != 0:
-    return 366;
-  case year % 4 == 0 && year % 400 == 0:
-    return 366
-  case year % 4 == 0 && year % 100 != 0:
-    return 365
-  default:
-    return 365
-  }
+if ((0 == year % 4) && (0 != year % 100) || (0 == year % 400)) {
+  return 366
+}
+return 365;
 
 }
-
-
 
 /**
  * @function randomNumber
@@ -229,6 +221,37 @@ function rounder(x, digits=2) {
  */
 function objectFromTwoLists(keys,values) {
   return Object.fromEntries(keys.map((entry) => [entry,values]))
+
+
+/**
+ * @generator
+ * @function generateTimeRange
+ * @param {number} startHour - an hour (0,24)
+ * @param {number} endHour - an hour (0,24)
+ * @param {number} step - minutes (0,60)
+ * */
+function* generateTimeRange(startHour,endHour,step) {
+
+  // 
+  var startHourInMinute = startHour * 60;
+  const endHourInMinute = endHour * 60;
+
+  // Range is inclusive, endHour is last value in range
+
+  while (startHourInMinute <= endHourInMinute) {
+
+    // getting hours of day in 0-24 format
+    let hh = Math.floor(startHourInMinute / 60); 
+    // getting minutes of the hour in 0-55 format
+    let mm = startHourInMinute % 60; 
+
+    let time = `${('0' + (hh % 24)).slice(-2)}:${('0' + mm).slice(-2)}`;
+    yield time
+
+    startHourInMinute += step;
+    }
+
+}
 }
 
 
