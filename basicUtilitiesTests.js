@@ -1,16 +1,16 @@
 function testdaysIn(){
 
-    const years = Object.fromEntries([
-      [2001, 365],
-      [2002, 365],
-      [2024, 366],
-      [2020, 366],
-      [2000, 366],
-      [1800, 365],
-      [1900, 365],
-      [1800, 365],
-      [1600, 366]
-    ])
+    const years = {
+      2001: 365,
+      2002: 365,
+      2024: 366,
+      2020: 366,
+      2000: 366,
+      1800: 365,
+      1900:  365,
+      1800: 365,
+      1600: 366
+    }
 
     Object.entries(years).forEach(([key, value]) => {
 	expectToEqual(daysIn(key),value);
@@ -58,12 +58,12 @@ function testcategorySum() {
 function testcolumnNumberToLetter() {
 
 
-    const columnsObject = Object.fromEntries([
-    [27, "AA"], 
-    [53,"BA"],
-    [79,"CA"],
-    [105,"DA"]
-    ]);
+    const columnsObject = {
+    27: "AA",
+    53: "BA",
+    79: "CA",
+    105: "DA"
+    };
 
     Object.keys(columnsObject).forEach(
       (columnNumber) => expectToEqual(columnNumberToLetter(columnNumber), columnsObject[columnNumber])

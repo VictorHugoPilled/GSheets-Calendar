@@ -50,25 +50,25 @@ function Calendar(row1 = 2, column1 = 2){
       this.range = sheetRangeToAlNotation(this.year,this.row1,this.column1,this.rows,this.columns);
       this.calendar = readRange(this.id,this.range);
       
-      this.rangeExpirations = Object.fromEntries([
-        ['Today', TENMINUTES],
-        ['Yesterday', SIXHOURS],
-        ['Current Week', SIXHOURS],
-        ['Previous Week', SIXHOURS],
-        ['Current Month', SIXHOURS],
-        ['Previous Month', SIXHOURS],
-        ['This Year', SIXHOURS]
-        ]);
+      this.rangeExpirations = {
+        'Today': TENMINUTES,
+        'Yesterday': SIXHOURS,
+        'Current Week': SIXHOURS,
+        'Previous Week': SIXHOURS,
+        'Current Month': SIXHOURS,
+        'Previous Month': SIXHOURS,
+        'This Year': SIXHOURS
+      };
 
-      this.rangeArguments = Object.fromEntries([
-        ['Today', [Array.from(this.calendar).length - DAYLENGTH, DAYLENGTH]],
-        ['Yesterday', [Array.from(this.calendar).length - (2*DAYLENGTH), DAYLENGTH]],
-        ['Current Week', [Array.from(this.calendar).length - WEEKLENGTH,WEEKLENGTH]],
-        ['Previous Week', [Array.from(this.calendar).length - (WEEKLENGTH * 2),WEEKLENGTH]],
-        ['Current Month', [Array.from(this.calendar).length - MONTHLENGTH,MONTHLENGTH]],
-        ['Previous Month', [Array.from(this.calendar).length - (MONTHLENGTH * 2),MONTHLENGTH]],
-        ['This Year', [YEARSTARTNUMBER ,Array.from(this.calendar).length - DAYLENGTH]]
-        ]);
+      this.rangeArguments = {
+        'Today': [Array.from(this.calendar).length - DAYLENGTH, DAYLENGTH],
+        'Yesterday': [Array.from(this.calendar).length - (2*DAYLENGTH), DAYLENGTH],
+        'Current Week': [Array.from(this.calendar).length - WEEKLENGTH,WEEKLENGTH],
+        'Previous Week': [Array.from(this.calendar).length - (WEEKLENGTH * 2),WEEKLENGTH],
+        'Current Month' : [Array.from(this.calendar).length - MONTHLENGTH,MONTHLENGTH],
+        'Previous Month' : [Array.from(this.calendar).length - (MONTHLENGTH * 2),MONTHLENGTH],
+        'This Year' : [YEARSTARTNUMBER ,Array.from(this.calendar).length - DAYLENGTH]
+        };
 
   }
 
@@ -151,13 +151,13 @@ Calendar.prototype.calendarCalculations = function(checkCache=false) {
         const weeksPassed = Math.floor(daysPassed/WEEKLENGTH);
         const monthsPassed = Math.floor(weeksPassed/WEEKSINAMONTH)
 
-        const calculations = Object.fromEntries([
-        ["Percentage of the year",rounder(this.notesOfAYear().length/this.totalCells)],
-        ["Hours passed", rounder(hoursPassed)],
-        ["Days passed", Math.floor((hoursPassed/DAYLENGTH)/HOURSINADAY)],
-        ["Weeks passed",weeksPassed],
-        ["Months passed",monthsPassed]
-        ])
+        const calculations = {
+        "Percentage of the year": rounder(this.notesOfAYear().length/this.totalCells),
+        "Hours passed": rounder(hoursPassed),
+        "Days passed": Math.floor((hoursPassed/DAYLENGTH)/HOURSINADAY),
+        "Weeks passed": weeksPassed,
+        "Months passed": monthsPassed
+        }
 
 
         putCache(key,calculations,TENMINUTES);
@@ -211,12 +211,12 @@ Calendar.prototype.categoryCalculations = function(category, rangeName, checkCac
 
           const range = this.calendarSlicer(...this.rangeArguments[rangeName]);
           
-          const calculations = Object.fromEntries([
-              ["Total Notes",categorySum(range,category)],
-              ["Percentage",rounder((categorySum(range,category)/range.length)*100)],
-              ["Total Hours",rounder(categorySum(range,category)/this.cellsPerHour)],
-              ["Average Time in Hours", rounder((categorySum(range,category)/this.cellsPerHour)/this.rangeArguments[rangeName][1])],
-              ]);
+          const calculations = {
+              "Total Notes": categorySum(range,category),
+              "Percentage": rounder((categorySum(range,category)/range.length)*100),
+              "Total Hours": rounder(categorySum(range,category)/this.cellsPerHour),
+              "Average Time in Hours": rounder((categorySum(range,category)/this.cellsPerHour)/this.rangeArguments[rangeName][1]),
+          };
           
           if (calculation != null) {
             return calculations[calculation];
